@@ -33,7 +33,7 @@ contract AirlineManagement is ERC721, Ownable {
     }
 
     // must create one destination
-    constructor(string memory destination, uint256 destinationPrice) ERC721("Boarding Pass", "MNFT") Ownable(msg.sender) {
+    constructor(string memory destination, uint256 destinationPrice) ERC721("Boarding Pass", "MNFT") Ownable() {
         ceo = msg.sender;
         count = 0;
         destinations.push(destination);
