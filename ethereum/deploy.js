@@ -17,7 +17,7 @@ const deploy = async () => {
 
   const result = await new web3.eth.Contract(compiledProgram.abi)
     .deploy({ data: compiledProgram.evm.bytecode.object, arguments: ["Cuba", 10] })
-    .send({ gas: "2000000", from: accounts[0] });
+    .send({ gas: "8000000", from: accounts[0] });
 
   console.log("Contract deployed to", result.options.address);
   provider.engine.stop();
