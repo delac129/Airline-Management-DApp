@@ -26,8 +26,6 @@ const input = {
 
 const first = solc.compile(JSON.stringify(input))
 
-console.log(first);
-
 const output = JSON.parse(first).contracts[
   "AirlineManagement.sol"
 ];
