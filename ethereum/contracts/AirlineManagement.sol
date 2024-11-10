@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
 pragma solidity ^0.8.0;
 
-contract AirlineManagement is ERC721, Ownable {
+contract AirlineManagement {
     struct Ticket {
         address owner;
         string destination;
@@ -33,7 +31,7 @@ contract AirlineManagement is ERC721, Ownable {
     }
 
     // must create one destination
-    constructor(string memory destination, uint256 destinationPrice) ERC721("Boarding Pass", "MNFT") Ownable() {
+    constructor(string memory destination, uint256 destinationPrice) {
         ceo = msg.sender;
         count = 0;
         destinations.push(destination);
@@ -71,7 +69,6 @@ contract AirlineManagement is ERC721, Ownable {
     function create30Tickets(address owner, string memory destination, uint256 price) public restricted {
         for (uint256 seat = 0; seat < 30; seat++) {
             uint256 tokenId = nextTicketId;
-            _safeMint(owner, tokenId);
             ticketDetails[tokenId] = Ticket(owner, destination, price, seat, "", false, true);
             nextTicketId++;
         }
@@ -96,8 +93,6 @@ contract AirlineManagement is ERC721, Ownable {
             
             // makes sure its the same destination
             if (keccak256(abi.encodePacked(ticket.destination)) == keccak256(abi.encodePacked(destination)) && ticket.isAvailable) {
-                // transfers the ticket to the sender
-                _safeTransfer(ticket.owner, msg.sender, tokenId, "");
                 
                 // updates the ticket details
                 ticket.owner = msg.sender;

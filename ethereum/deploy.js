@@ -1,6 +1,6 @@
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const { Web3 } = require("web3");
-const compiledFactory = require("./build/CampaignFactory.json");
+const compiledProgram = require("./build/AirlineManagement.json");
 
 const provider = new HDWalletProvider(
   "solid reform royal calm canal regular defy hope useful element lake corn",
@@ -15,9 +15,9 @@ const deploy = async () => {
 
   console.log("Attempting to deploy from account", accounts[0]);
 
-  const result = await new web3.eth.Contract(compiledFactory.abi)
-    .deploy({ data: compiledFactory.evm.bytecode.object })
-    .send({ gas: "1400000", from: accounts[0] });
+  const result = await new web3.eth.Contract(compiledProgram.abi)
+    .deploy({ data: compiledProgram.evm.bytecode.object, arguments: ["Cuba", 10] })
+    .send({ gas: "2000000", from: accounts[0] });
 
   console.log("Contract deployed to", result.options.address);
   provider.engine.stop();

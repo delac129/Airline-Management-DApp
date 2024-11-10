@@ -24,13 +24,11 @@ const input = {
   },
 };
 
-const out = JSON.parse(solc.compile(JSON.stringify(input)));
+const first = solc.compile(JSON.stringify(input))
 
-// Log the output to inspect the structure
-console.log(out);
+console.log(first);
 
-
-const output = JSON.parse(solc.compile(JSON.stringify(input))).contracts[
+const output = JSON.parse(first).contracts[
   "AirlineManagement.sol"
 ];
 
