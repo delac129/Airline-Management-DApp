@@ -40,23 +40,23 @@ contract AirlineManagement {
         create30Tickets(msg.sender, destination, destinationPrice);
 
         // Initialize monthMultiplier
-        monthMultiplier[0] = 1;
-        monthMultiplier[1] = 1;
-        monthMultiplier[2] = 1;
-        monthMultiplier[3] = 1;
-        monthMultiplier[4] = 1;
-        monthMultiplier[5] = 1;
-        monthMultiplier[6] = 1;
-        monthMultiplier[7] = 1;
-        monthMultiplier[8] = 1;
-        monthMultiplier[9] = 1;
-        monthMultiplier[10] = 1;
-        monthMultiplier[11] = 1;
+        monthMultiplier[0] = 3;
+        monthMultiplier[1] = 2;
+        monthMultiplier[2] = 4;
+        monthMultiplier[3] = 5;
+        monthMultiplier[4] = 3;
+        monthMultiplier[5] = 12;
+        monthMultiplier[6] = 11;
+        monthMultiplier[7] = 12;
+        monthMultiplier[8] = 15;
+        monthMultiplier[9] = 14;
+        monthMultiplier[10] = 11;
+        monthMultiplier[11] = 13;
 
         // Initialize classMultiplier
         classMultiplier[0] = 1;
-        classMultiplier[1] = 1;
-        classMultiplier[2] = 1;
+        classMultiplier[1] = 2;
+        classMultiplier[2] = 3;
     }
 
     //Creates a destination
@@ -75,12 +75,18 @@ contract AirlineManagement {
     }
 
     function getPrice (string memory destination, uint month, uint class, bool way) public view returns(uint) {
-        uint price = destinationPrices[indexes[destination]] 
-                * monthMultiplier[month - 1] 
-                * classMultiplier[class - 1];
+        uint cm = classMultiplier[class - 1]; //class multiplier
+        uint mm = monthMultiplier[month - 1]; //month multiplier
 
-        if(way){return price * 2;}
-        return price;
+        uint price = destinationPrices[indexes[destination]] * cm;
+
+        if(way)
+            price *= 2;
+
+        if(10 > mm)
+            return price / mm;
+        return price * (mm - 10);
+
     }
 
     function bookFlight(string memory destination, uint month, uint class, bool way) public payable{
