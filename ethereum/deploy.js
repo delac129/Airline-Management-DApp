@@ -3,9 +3,9 @@ const { Web3 } = require("web3");
 const compiledProgram = require("./build/AirlineManagement.json");
 
 const provider = new HDWalletProvider(
-  "solid reform royal calm canal regular defy hope useful element lake corn",
+  "pipe pave armed used genre famous crash also audit bone donate divert",
   // remember to change this to your own phrase!
-  "https://sepolia.infura.io/v3/e489198de3ac46e683413abc4201fea7"
+  "https://sepolia.infura.io/v3/af93f37f51c0453397d3cb70f2cc4c9d"
   // remember to change this to your own endpoint!
 );
 const web3 = new Web3(provider);
