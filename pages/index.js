@@ -9,6 +9,7 @@ class CampaignIndex extends Component {
     destination: "",
     month: "",
     travelClass: "",
+    roundTrip: false,  // Added state for round trip
     errorMessage: "",
   };
 
@@ -25,17 +26,15 @@ class CampaignIndex extends Component {
     this.setState({ errorMessage: "" });
 
     // Handle submit logic here
-    console.log("Form submitted with:", this.state.destination, this.state.month, this.state.travelClass);
+    console.log("Form submitted with:", this.state.destination, this.state.month, this.state.travelClass, this.state.roundTrip);
   };
 
   render() {
-    const { destination, month, travelClass, errorMessage } = this.state;
+    const { destination, month, travelClass, roundTrip, errorMessage } = this.state;
     const backgroundImageUrl = "./SpongePlane.webp"; 
 
     return (
       <Layout>
-        
-        
         <Grid divided="vertically">
           <Grid.Row columns={2}>
             {/* Left Column: Text boxes for inputs */}
@@ -66,6 +65,15 @@ class CampaignIndex extends Component {
                     placeholder="Enter class (e.g., Economy, Business)"
                     value={travelClass}
                     onChange={(e) => this.setState({ travelClass: e.target.value })}
+                  />
+                </Form.Field>
+
+                {/* Round Trip Checkbox */}
+                <Form.Field>
+                  <Form.Checkbox
+                    label="Round Trip"
+                    checked={roundTrip}
+                    onChange={() => this.setState({ roundTrip: !roundTrip })}
                   />
                 </Form.Field>
 
