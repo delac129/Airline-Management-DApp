@@ -37,7 +37,7 @@ contract AirlineManagement {
         count = 0;
         destinations.push(destination);
         destinationPrices.push(destinationPrice);
-        seats[count] = 30;
+        seats.push(30);
         indexes[destination] = count;
         create30Tickets(msg.sender, destination, destinationPrice);
 
@@ -72,7 +72,7 @@ contract AirlineManagement {
         destinations.push(destination);
         destinationPrices.push(destinationPrice);
         indexes[destination] = count;
-        seats[count] = 30;
+        seats.push(30);
         count++;
     }
 
@@ -126,6 +126,7 @@ contract AirlineManagement {
 
         // no available ticket was found
         require(booked, "No available tickets for the specified destination");
+        seats[indexes[destination]]--;
     }
 
     function isCeo(address user) public view returns(bool) {
