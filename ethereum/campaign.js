@@ -1,7 +1,7 @@
 import web3 from "./web3";
-import Campaign from "./build/Campaign.json";
+import Airline from "./build/AirlineManagement.json";
 
-const campaign = (address) => {
-  return new web3.eth.Contract(Campaign.abi, address);
+const airline = (address) => {
+  return new web3.eth.Contract(Airline.abi, address);
 };
-export default campaign;
+export default airline;
