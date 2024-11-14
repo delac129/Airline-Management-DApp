@@ -79,7 +79,7 @@ class BookedNew extends Component {
                     <Table.Cell>{flight.destination}</Table.Cell>
                     <Table.Cell>{flight.class}</Table.Cell>
                     <Table.Cell>{flight.roundTrip ? "Yes" : "No"}</Table.Cell>
-                    <Table.Cell>{this.monthNames[flight.month - 1]}</Table.Cell>
+                    <Table.Cell>{this.monthNames[Number(flight.month) - 1]}</Table.Cell>
                     <Table.Cell>{web3.utils.fromWei(flight.price.toString(), 'wei')} Wei</Table.Cell>
                   </Table.Row>
                 ))}
