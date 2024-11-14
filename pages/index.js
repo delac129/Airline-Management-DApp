@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { Grid, Form, Input, Segment, Message, Card, Button, Dropdown } from "semantic-ui-react";
 import management from "../ethereum/management";
-import web3 from "../ethereum/web3";
 import Layout from "../components/Layout";
 import { Link } from "../routes";
 
