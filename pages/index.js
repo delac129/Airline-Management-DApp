@@ -3,7 +3,7 @@ import { Grid, Form, Input, Segment, Message, Button, Dropdown } from "semantic-
 import management from "../ethereum/management";
 import web3 from "../ethereum/web3";
 import Layout from "../components/Layout";
-import { Link, Router } from "../routes";
+import { Router } from "../routes";
 
 class CampaignIndex extends Component {
   state = {
@@ -14,6 +14,7 @@ class CampaignIndex extends Component {
     errorMessage: "",    // Error message state
     price: null,          // State to store the calculated price in wei
     destinations: [],    // Array to store available destinations
+    seatsLeft: [],       // Array to store the number of seats left for each destination
     loading: false,      // Added loading state for transaction
     isManager: false,    // State to track if the user is the manager
   };
@@ -21,18 +22,22 @@ class CampaignIndex extends Component {
   // Manager's address
   managerAddress = "0x8B76333F7AE33F5f998989EBBE7d1A3479Bc417E";
 
-  // Fetch destinations when the component mounts
+  // Fetch destinations and seats when the component mounts
   async componentDidMount() {
     try {
       const totalDestinations = await management.methods.count().call();
       const destinations = [];
-    
+      const seatsLeft = [];
+
+      // Loop through destinations to get names and available seats
       for (let i = 0; i < totalDestinations; i++) {
         const destination = await management.methods.destinations(i).call();
+        const seats = await management.methods.seats(i).call();
         destinations.push(destination);
+        seatsLeft.push(seats.toString()); // Convert BigInt to string
       }
 
-      this.setState({ destinations });
+      this.setState({ destinations, seatsLeft });
     } catch (error) {
       console.error("Error fetching destinations:", error);
       this.setState({ errorMessage: "Failed to load destinations." });
@@ -42,14 +47,14 @@ class CampaignIndex extends Component {
   // Handle form submission (on "Check Price" button)
   onCheckPrice = async (event) => {
     event.preventDefault();
-  
+
     const { destination, monthIndex, travelClassIndex, roundTrip, destinations } = this.state;
-  
+
     if (!destination || monthIndex === "" || travelClassIndex === "") {
       this.setState({ errorMessage: "All fields are required!" });
       return;
     }
-  
+
     if (!destinations.includes(destination)) {
       this.setState({
         errorMessage: "The entered destination is not available.",
@@ -57,14 +62,14 @@ class CampaignIndex extends Component {
       });
       return;
     }
-  
+
     this.setState({ errorMessage: "", price: null });
-  
+
     try {
       const priceInWei = await management.methods
         .getPrice(destination, monthIndex + 1, travelClassIndex + 1, roundTrip)
         .call();
-  
+
       this.setState({ price: priceInWei });
     } catch (error) {
       console.error("Error fetching price:", error);
@@ -84,14 +89,14 @@ class CampaignIndex extends Component {
 
   onBookNow = async (event) => {
     event.preventDefault();
-  
+
     const { destination, monthIndex, travelClassIndex, roundTrip, price, destinations } = this.state;
-  
+
     if (!destination || monthIndex === "" || travelClassIndex === "" || price === null) {
       this.setState({ errorMessage: "All fields are required!", price: null });
       return;
     }
-  
+
     if (!destinations.includes(destination)) {
       this.setState({
         errorMessage: "The entered destination is not available.",
@@ -99,19 +104,22 @@ class CampaignIndex extends Component {
       });
       return;
     }
-  
+
     this.setState({ errorMessage: "", loading: true });
-  
+
     try {
       const accounts = await web3.eth.getAccounts();
-  
+
       await management.methods
         .bookFlight(destination, monthIndex + 1, travelClassIndex + 1, roundTrip)
         .send({
           from: accounts[0],
           value: price,
         });
-  
+
+      // After booking, update the number of seats left
+      this.updateSeatsLeft(destination);
+
       this.setState({ loading: false, errorMessage: "", price: null });
       alert("Flight booked successfully!");
     } catch (error) {
@@ -121,6 +129,27 @@ class CampaignIndex extends Component {
         loading: false,
         price: null,
       });
+    }
+  };
+
+  // Method to update the seats left for the booked destination
+  updateSeatsLeft = async (destination) => {
+    try {
+      const totalDestinations = await management.methods.count().call();
+      const updatedSeatsLeft = [...this.state.seatsLeft];
+
+      // Loop through destinations to update the seats left for the booked destination
+      for (let i = 0; i < totalDestinations; i++) {
+        const currentDestination = await management.methods.destinations(i).call();
+        if (currentDestination === destination) {
+          const updatedSeats = await management.methods.seats(i).call();
+          updatedSeatsLeft[i] = updatedSeats.toString();
+        }
+      }
+
+      this.setState({ seatsLeft: updatedSeatsLeft });
+    } catch (error) {
+      console.error("Error updating seats left:", error);
     }
   };
 
@@ -137,7 +166,7 @@ class CampaignIndex extends Component {
   };
 
   render() {
-    const { destination, monthIndex, travelClassIndex, roundTrip, errorMessage, price, destinations, loading } = this.state;
+    const { destination, monthIndex, travelClassIndex, roundTrip, errorMessage, price, destinations, seatsLeft, loading } = this.state;
 
     const monthOptions = [
       { key: 0, text: "January", value: 0 },
@@ -241,7 +270,7 @@ class CampaignIndex extends Component {
                       {destinations.map((destination, index) => (
                         <Grid.Row key={index}>
                           <Grid.Column width={16}>
-                            <p>{destination}</p>
+                            <p>{destination} - {seatsLeft[index]} seats left</p>
                           </Grid.Column>
                         </Grid.Row>
                       ))}
@@ -261,25 +290,7 @@ class CampaignIndex extends Component {
           icon="lock"
           primary
           onClick={this.handleManagerAccess}
-          style={{ marginBottom: "20px" }}
         />
-
-        {errorMessage && (
-          <Message
-            error
-            content={errorMessage}
-            style={{
-              position: "fixed",
-              bottom: "50px", // 50px from the bottom
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 1000,
-              margin: 0,
-              width: "90%", // Adjust width
-              maxWidth: "500px", // Max width for better responsiveness
-            }}
-          />
-        )}
       </Layout>
     );
   }
