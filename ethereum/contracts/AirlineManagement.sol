@@ -16,10 +16,10 @@ contract AirlineManagement {
     address public ceo; //The CEO of the airlines
     string[] public destinations; //Array of the names of the destinations
     uint[] public destinationPrices; //Array of the prices for the destinations
-    mapping(string => uint) indexes; //Gives the index of the destination by passing its name
+    mapping(string => uint) public indexes; //Gives the index of the destination by passing its name
     uint[12] public monthMultiplier; //The multiplier for each month
     uint[3] public classMultiplier; //The multipler for each class type?
-    uint count; //The number of destinations available
+    uint public count; //The number of destinations available
 
     // for associating ticket with NFTs
     mapping(uint256 => Ticket) public ticketDetails;
