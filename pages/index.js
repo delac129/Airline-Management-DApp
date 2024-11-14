@@ -12,63 +12,132 @@ class CampaignIndex extends Component {
     travelClassIndex: "", // Stores the selected travel class index (0: Economy, 1: Business, 2: First Class)
     roundTrip: false,    // Added state for round trip
     errorMessage: "",
+    price: null,          // State to store the calculated price in wei
     destinations: [],    // Array to store available destinations
+    loading: false,      // Added loading state for transaction
   };
 
   // Fetch destinations when the component mounts
   async componentDidMount() {
-    // Get the total number of destinations from the contract
-    const totalDestinations = await management.methods.count().call(); 
-    const destinations = [];
+    try {
+      // Get the total number of destinations from the contract
+      const totalDestinations = await management.methods.count().call();
+      const destinations = [];
     
-    // Loop through all the destinations and fetch each one
-    for (let i = 0; i < totalDestinations; i++) {
-      const destination = await management.methods.destinations(i).call(); // Get destination by index
-      
-      destinations.push(destination);
-    }
+      // Loop through all the destinations and fetch each one
+      for (let i = 0; i < totalDestinations; i++) {
+        const destination = await management.methods.destinations(i).call(); // Get destination by index
+        destinations.push(destination);
+      }
 
-    // Update state with the fetched destinations
-    this.setState({ destinations });
+      // Update state with the fetched destinations
+      this.setState({ destinations });
+    } catch (error) {
+      console.error("Error fetching destinations:", error);
+      this.setState({ errorMessage: "Failed to load destinations." });
+    }
   }
 
-  onSubmit = (event) => {
+  // Handle form submission (on "Check Price" button)
+  onCheckPrice = async (event) => {
     event.preventDefault();
-    
+  
+    const { destination, monthIndex, travelClassIndex, roundTrip, destinations } = this.state;
+  
     // Validate that all fields are filled
-    if (!this.state.destination || this.state.monthIndex === "" || this.state.travelClassIndex === "" || !this.state.travelClass) {
+    if (!destination || monthIndex === "" || travelClassIndex === "") {
       this.setState({ errorMessage: "All fields are required!" });
       return;
     }
-
-    // Reset error message
-    this.setState({ errorMessage: "" });
-
-    // Handle submit logic here
-    console.log("Form submitted with:", this.state.destination, this.state.monthIndex, this.state.travelClassIndex, this.state.roundTrip);
+  
+    // Check if the destination exists in the list of available destinations
+    if (!destinations.includes(destination)) {
+      this.setState({
+        errorMessage: "The entered destination is not available.",
+        price: null, // Clear the price if destination is invalid
+      });
+      return;
+    }
+  
+    // Reset error message and price state if the destination is valid
+    this.setState({ errorMessage: "", price: null });
+  
+    try {
+      // Call getPrice from the contract
+      const priceInWei = await management.methods
+        .getPrice(destination, monthIndex + 1, travelClassIndex + 1, roundTrip)
+        .call();
+  
+      // Update the price state with the returned value (price in wei)
+      this.setState({ price: priceInWei });
+    } catch (error) {
+      console.error("Error fetching price:", error);
+      this.setState({ errorMessage: "Failed to fetch price." });
+    }
   };
+  
 
+  // Handle month dropdown change
   handleMonthChange = (e, { value }) => {
-    // Set the month index in state when a month is selected
     this.setState({ monthIndex: value });
   };
 
+  // Handle class dropdown change
   handleClassChange = (e, { value }) => {
-    // Set the travel class index in state when a class is selected
     this.setState({ travelClassIndex: value });
   };
 
-  getMonthName(index) {
-    // Helper method to convert index to month name
-    const months = [
-      "January", "February", "March", "April", "May", "June", 
-      "July", "August", "September", "October", "November", "December"
-    ];
-    return months[index];
-  }
+  onBookNow = async (event) => {
+    event.preventDefault();
+  
+    const { destination, monthIndex, travelClassIndex, roundTrip, price, destinations } = this.state;
+  
+    // Validate that all fields are filled
+    if (!destination || monthIndex === "" || travelClassIndex === "" || price === null) {
+      this.setState({ errorMessage: "All fields are required!", price: null }); // Clear price
+      return;
+    }
+  
+    // Check if the destination exists in the list of available destinations
+    if (!destinations.includes(destination)) {
+      this.setState({
+        errorMessage: "The entered destination is not available.",
+        price: null, // Clear the price if the destination is invalid
+      });
+      return;
+    }
+  
+    // Reset error message and set loading state
+    this.setState({ errorMessage: "", loading: true });
+  
+    try {
+      const accounts = await web3.eth.getAccounts();
+  
+      // Call bookFlight from the contract (paying the price in wei)
+      await management.methods
+        .bookFlight(destination, monthIndex + 1, travelClassIndex + 1, roundTrip)
+        .send({
+          from: accounts[0],
+          value: price, // Sending the price (in wei) to complete the transaction
+        });
+  
+      // On success, reset loading state and show success message
+      this.setState({ loading: false, errorMessage: "", price: null });
+      alert("Flight booked successfully!");
+    } catch (error) {
+      console.error("Error booking flight:", error);
+      this.setState({
+        errorMessage: "Failed to book the flight. Please try again.",
+        loading: false,
+        price: null, // Clear price if there is an error
+      });
+    }
+  };
+  
+
 
   render() {
-    const { destination, monthIndex, travelClassIndex, roundTrip, errorMessage, destinations } = this.state;
+    const { destination, monthIndex, travelClassIndex, roundTrip, errorMessage, price, destinations, loading } = this.state;
 
     // Dropdown options for months (January = index 0, December = index 11)
     const monthOptions = [
@@ -100,7 +169,7 @@ class CampaignIndex extends Component {
             {/* Left Column: Text boxes for inputs */}
             <Grid.Column width={8}>
               <h3>Book Flight</h3>
-              <Form onSubmit={this.onSubmit} error={!!errorMessage}>
+              <Form onSubmit={this.onCheckPrice} error={!!errorMessage}>
                 
                 {/* Select Destination Text Box */}
                 <Form.Field>
@@ -161,33 +230,40 @@ class CampaignIndex extends Component {
                 <Button
                   primary
                   style={{ marginTop: "10px" }}
-                  disabled={!destination || monthIndex === "" || travelClassIndex === ""} // Disable until all fields are filled
+                  onClick={this.onBookNow}
+                  loading={loading} // Show loading indicator while booking
+                  disabled={!destination || monthIndex === "" || travelClassIndex === "" || !price} // Disable until all fields are filled and price is fetched
                 >
                   Book Now
                 </Button>
               </Form>
+
+              {/* Display Price if available */}
+              {price !== null && (
+                <Message
+                  success
+                  content={`The price for your selected flight is: ${price} Wei`}
+                />
+              )}
             </Grid.Column>
 
             {/* Right Column: Display Available Destinations */}
             <Grid.Column width={8}>
               <Segment style={{ height: "100%", padding: "20px" }}>
                 <h4>Available Destinations</h4>
-                <div
-                  style={{
-                    height: "200px",
-                    border: "1px solid #ddd",
-                    textAlign: "center",
-                    paddingTop: "50px",
-                    color: "#aaa",
-                  }}
-                >
+                <div style={{ height: "200px", overflowY: "scroll", paddingRight: "20px" }}>
                   {/* Dynamically display destinations */}
                   {destinations.length > 0 ? (
-                    <ul>
+                    <Grid>
                       {destinations.map((destination, index) => (
-                        <li key={index}>{destination}</li>
+                        <Grid.Row key={index}>
+                          <Grid.Column width={16}>
+                            {/* Destination Name */}
+                            <p>{destination}</p>
+                          </Grid.Column>
+                        </Grid.Row>
                       ))}
-                    </ul>
+                    </Grid>
                   ) : (
                     <p>No destinations available yet...</p>
                   )}
@@ -200,12 +276,7 @@ class CampaignIndex extends Component {
         {/* Manager Access Button */}
         <Link route="/campaigns/new">
           <a>
-            <Button
-              floated="right"
-              content="Manager Access"
-              icon="lock"
-              primary
-            />
+            <Button floated="right" content="Manager Access" icon="lock" primary />
           </a>
         </Link>
       </Layout>
@@ -214,3 +285,4 @@ class CampaignIndex extends Component {
 }
 
 export default CampaignIndex;
+
