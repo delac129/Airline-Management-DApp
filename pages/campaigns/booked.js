@@ -12,6 +12,11 @@ class BookedNew extends Component {
     errorMessage: "",
   };
 
+  monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
   // get booked flights for the logged in user
   async componentDidMount() {
     try {
@@ -63,6 +68,7 @@ class BookedNew extends Component {
                   <Table.HeaderCell>Destination</Table.HeaderCell>
                   <Table.HeaderCell>Class</Table.HeaderCell>
                   <Table.HeaderCell>Round Trip</Table.HeaderCell>
+                  <Table.HeaderCell>Month</Table.HeaderCell>
                   <Table.HeaderCell>Price Paid (Wei)</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
@@ -73,6 +79,7 @@ class BookedNew extends Component {
                     <Table.Cell>{flight.destination}</Table.Cell>
                     <Table.Cell>{flight.class}</Table.Cell>
                     <Table.Cell>{flight.roundTrip ? "Yes" : "No"}</Table.Cell>
+                    <Table.Cell>{this.monthNames[Number(flight.month) - 1]}</Table.Cell>
                     <Table.Cell>{web3.utils.fromWei(flight.price.toString(), 'wei')} Wei</Table.Cell>
                   </Table.Row>
                 ))}
