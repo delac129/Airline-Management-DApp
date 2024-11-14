@@ -51,6 +51,7 @@ class AirlineNew extends Component {
           from: accounts[0],
         });
 
+      alert("Destination Created Succesfully!");
       Router.pushRoute("/");
     } catch (err) {
       let errorMessage = "An error occurred.";

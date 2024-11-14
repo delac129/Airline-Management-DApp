@@ -66,7 +66,7 @@ contract AirlineManagement {
     //Creates a destination
     function createDestination(string memory destination, uint destinationPrice) restricted public {
         require(keccak256(abi.encodePacked(destinations[indexes[destination]])) != keccak256(abi.encodePacked(destination)), "Error: This destination already exists!");
-        require(destinationPrice > 31, "Error: Base price cannot be below 30 Wei!");
+        require(destinationPrice > 30, "Error: Base price cannot be below 30 Wei!");
         create30Tickets(msg.sender, destination, destinationPrice);
 
         destinations.push(destination);
