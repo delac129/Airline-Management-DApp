@@ -10,7 +10,15 @@ class AirlineNew extends Component {
     destination: "",
     basePrice: "",
     errorMessage: "",
+    worth: "",
+    canPay: "",
   };
+
+  async componentDidMount(){
+    const worth = (await web3.eth.getBalance(airline.options.address)).toString();
+
+    this.setState({worth});
+  }
 
   onSubmit = async (event) => {
     event.preventDefault();
@@ -73,8 +81,12 @@ class AirlineNew extends Component {
     this.setState({ loading: false });
   };
 
+  payOut = async (event) => {
+    console.log("testing");
+  }
+
   render() {
-    const { destination, basePrice, errorMessage } = this.state;
+    const { destination, basePrice, errorMessage, worth} = this.state;
     return (
       <Layout>
         <h3>Add Flight</h3>
@@ -110,6 +122,16 @@ class AirlineNew extends Component {
             Create Destination
           </Button>
         </Form>
+        <div class="thang">Your company is worth: {worth} Wei</div>
+        <div className="payout-container">
+          <Button
+            content="🤑 Payout"
+            primary
+            type="button"
+            onClick={this.payOut}
+            style={{ marginBottom: "20px" }}
+          />
+        </div>
       </Layout>
     );
   }

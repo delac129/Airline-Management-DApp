@@ -194,14 +194,14 @@ class CampaignIndex extends Component {
       <Layout>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '20vh' }}>
       <Image
-        src={logo} // This is automatically optimized by Next.js
+        src={logo}
         alt="Logo"
         height={225}
         width={225}
       />
 
 <div style={{ fontSize: '4rem', fontWeight: 'bold', marginLeft: '20px', color: '#333' }}>
-        Cerebral Airlines
+        Wi-Fly Airlines
       </div>
     </div>
 
