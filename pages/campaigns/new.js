@@ -3,6 +3,7 @@ import { Form, Button, Input, Message } from "semantic-ui-react";
 import Layout from "../../components/Layout";
 import web3 from "../../ethereum/web3";
 import { Router } from "../../routes";
+import airline from "../../ethereum/campaign.js"
 
 class CampaignNew extends Component {
   state = {
@@ -22,22 +23,22 @@ class CampaignNew extends Component {
 
     console.log("Form submitted with:", this.state.destination, this.state.basePrice);
 
-    /*
+    
     this.setState({ loading: true, errorMessage: "" });
 
     try {
       const accounts = await web3.eth.getAccounts();
-      await factory.methods
-        .createCampaign(this.state.minimumContribution)
+      await airline.methods
+        .createDestination(this.state.destination, this.state.basePrice)
         .send({
           from: accounts[0],
         });
 
       Router.pushRoute("/");
     } catch (err) {
-      this.setState({ errorMessage: err.message });
+      this.setState({ errorMessage: "" });
     }
-    this.setState({ loading: false });*/
+    this.setState({ loading: false });
   };
 
   render() {
@@ -73,7 +74,7 @@ class CampaignNew extends Component {
           <Button 
             primary
             type = "submit"
-            disable = {!destination || !basePrice}>
+            disabled = {!destination || !basePrice}>
             Create Destination
           </Button>
         </Form>
