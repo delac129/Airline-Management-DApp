@@ -11,13 +11,16 @@ class AirlineNew extends Component {
     basePrice: "",
     errorMessage: "",
     worth: "",
-    canPay: "",
+    canPay: false,
+    payment: "",
   };
 
-  async componentDidMount(){
+  async componentDidMount() {
     const worth = (await web3.eth.getBalance(airline.options.address)).toString();
+    const canPay = await airline.methods.canPayout().call();
+    const payment = (await airline.methods.payAmount().call() * BigInt(9) / BigInt(10)).toString();
 
-    this.setState({worth});
+    this.setState({ worth, canPay, payment });
   }
 
   onSubmit = async (event) => {
@@ -27,11 +30,11 @@ class AirlineNew extends Component {
     const length = await airline.methods.count().call();
     let name = ""
 
-    if(index < length)
+    if (index < length)
       name = await airline.methods.destinations(index).call();
 
     const exists = (name == this.state.destination);
-    if(exists) {
+    if (exists) {
       this.setState({ errorMessage: "The destination already exixsts!" });
       return;
     }
@@ -82,11 +85,26 @@ class AirlineNew extends Component {
   };
 
   payOut = async (event) => {
-    console.log("testing");
+    event.preventDefault();
+    try {
+      const accounts = await web3.eth.getAccounts();
+      await airline.methods.payCEO().send({ from: accounts[0] });
+
+      const worth = (await web3.eth.getBalance(airline.options.address)).toString();
+      const canPay = await airline.methods.canPayout().call();
+      const payment = (await airline.methods.payAmount().call() * BigInt(7) / BigInt(10)).toString();
+
+      this.setState({ worth, canPay, payment });
+
+      alert("You were payed Succesfully!");
+    }
+    catch (err) {
+      alert("Error paying you!");
+    }
   }
 
   render() {
-    const { destination, basePrice, errorMessage, worth} = this.state;
+    const { destination, basePrice, errorMessage, worth, canPay, payment } = this.state;
     return (
       <Layout>
         <h3>Add Flight</h3>
@@ -123,6 +141,7 @@ class AirlineNew extends Component {
           </Button>
         </Form>
         <div class="thang">Your company is worth: {worth} Wei</div>
+        <div class="thang">You may receive: {payment} Wei</div>
         <div className="payout-container">
           <Button
             content="🤑 Payout"
@@ -130,6 +149,7 @@ class AirlineNew extends Component {
             type="button"
             onClick={this.payOut}
             style={{ marginBottom: "20px" }}
+            disabled={!canPay}
           />
         </div>
       </Layout>

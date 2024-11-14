@@ -21,6 +21,8 @@ contract AirlineManagement {
     uint[12] public monthMultiplier; //The multiplier for each month
     uint[3] public classMultiplier; //The multipler for each class type?
     uint public count; //The number of destinations available
+    bool public canPayout; //If the CEO can collect money
+    uint public payAmount; //The amount the ceo can collect (30%)
 
     // for associating ticket with NFTs
     mapping(uint256 => Ticket) public ticketDetails;
@@ -34,6 +36,8 @@ contract AirlineManagement {
     // must create one destination
     constructor(string memory destination, uint256 destinationPrice) {
         ceo = msg.sender;
+        canPayout = false;
+        payAmount = 0;
         count = 0;
         destinations.push(destination);
         destinationPrices.push(destinationPrice);
@@ -118,6 +122,7 @@ contract AirlineManagement {
                 ticket.roundTrip = way;
                 ticket.isAvailable = false;
                 ticket.month = month;
+                ticket.price = msg.value;
 
                 booked = true;
                 break;
@@ -127,6 +132,9 @@ contract AirlineManagement {
         // no available ticket was found
         require(booked, "No available tickets for the specified destination");
         seats[indexes[destination]]--;
+
+        payAmount += (msg.value);
+        canPayout = true;
     }
 
     function isCeo(address user) public view returns(bool) {
@@ -158,4 +166,10 @@ contract AirlineManagement {
 
         return bookedTickets;
     }    
+
+    function payCEO() public restricted {
+        payable(ceo).transfer(payAmount * 9 / 10);
+        canPayout = false;
+        payAmount = 0;
+    }
 }
