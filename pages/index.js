@@ -4,8 +4,9 @@ import management from "../ethereum/management";
 import web3 from "../ethereum/web3";
 import Layout from "../components/Layout";
 import { Router } from "../routes";
+import Image from 'next/image';
 
-import logo from '../assets/SpongePlane.webp';
+import logo from '../assets/download.png';
 
 class CampaignIndex extends Component {
   state = {
@@ -27,6 +28,9 @@ class CampaignIndex extends Component {
   // Fetch destinations and seats when the component mounts
   async componentDidMount() {
     try {
+      console.log(logo);
+
+
       const totalDestinations = await management.methods.count().call();
       const destinations = [];
       const seatsLeft = [];
@@ -188,9 +192,18 @@ class CampaignIndex extends Component {
 
     return (
       <Layout>
-        <div style={{ display: "flex", justifyContent: "center", padding: "20px 0" }}>
-          <img src={logo} alt="Logo" style={{ maxHeight: "100px", maxWidth: "100%" }} />
-        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '20vh' }}>
+      <Image
+        src={logo} // This is automatically optimized by Next.js
+        alt="Logo"
+        height={225}
+        width={225}
+      />
+
+<div style={{ fontSize: '4rem', fontWeight: 'bold', marginLeft: '20px', color: '#333' }}>
+        Cerebral Airlines
+      </div>
+    </div>
 
         <Grid divided="vertically">
           <Grid.Row columns={2}>
