@@ -15,6 +15,25 @@ class AirlineNew extends Component {
   onSubmit = async (event) => {
     event.preventDefault();
 
+    const index = await airline.methods.indexes(this.state.destination).call();
+    const length = await airline.methods.count().call();
+    let name = ""
+
+    if(index < length)
+      name = await airline.methods.destinations(index).call();
+
+    const exists = (name == this.state.destination);
+    if(exists) {
+      this.setState({ errorMessage: "The destination already exixsts!" });
+      return;
+    }
+
+    const basePrice = Number(this.state.basePrice);
+    if (basePrice <= 30) {
+      this.setState({ errorMessage: "The base price must be greater than 30 Wei!" });
+      return;
+    }
+
     if (!this.state.destination || !this.state.basePrice) {
       this.setState({ errorMessage: "Both fields are required!" });
       return;
