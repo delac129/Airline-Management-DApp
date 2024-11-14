@@ -18,12 +18,13 @@ class CampaignIndex extends Component {
   // Fetch destinations when the component mounts
   async componentDidMount() {
     // Get the total number of destinations from the contract
-    const totalDestinations = await management.methods.destinations.length().call(); 
+    const totalDestinations = await management.methods.count().call(); 
     const destinations = [];
     
     // Loop through all the destinations and fetch each one
     for (let i = 0; i < totalDestinations; i++) {
       const destination = await management.methods.destinations(i).call(); // Get destination by index
+      
       destinations.push(destination);
     }
 
