@@ -15,13 +15,13 @@ class AirlineNew extends Component {
   onSubmit = async (event) => {
     event.preventDefault();
 
-    if(!this.state.destination || !this.state.basePrice){
-      this.setState({errorMessage: "Both fields are required!"});
+    if (!this.state.destination || !this.state.basePrice) {
+      this.setState({ errorMessage: "Both fields are required!" });
       return;
     }
-    this.setState({errorMessage: ""});
+    this.setState({ errorMessage: "" });
 
-    
+
     this.setState({ loading: true, errorMessage: "" });
 
     try {
@@ -34,7 +34,21 @@ class AirlineNew extends Component {
 
       Router.pushRoute("/");
     } catch (err) {
-      this.setState({ errorMessage: "we" });
+      let errorMessage = "An error occurred.";
+
+      if (err.message.includes("revert")) {
+        const revertMessage = err.message.split("revert ")[1];
+        if (revertMessage) {
+          errorMessage = revertMessage.trim();
+        } else {
+          errorMessage = "Transaction failed!";
+        }
+      } else {
+        errorMessage = err.message;
+      }
+
+      // Display the error message
+      this.setState({ errorMessage });
     }
     this.setState({ loading: false });
   };
@@ -48,8 +62,8 @@ class AirlineNew extends Component {
           <Form.Field>
             <label>Destination</label>
             <Input
-              placeholder = "Enter destination"
-              value = {destination}
+              placeholder="Enter destination"
+              value={destination}
               onChange={(event) =>
                 this.setState({ destination: event.target.value })
               }
@@ -67,12 +81,12 @@ class AirlineNew extends Component {
             />
           </Form.Field>
           {errorMessage && (
-            <Message error content = {errorMessage} />
+            <Message error content={errorMessage} />
           )}
-          <Button 
+          <Button
             primary
-            type = "submit"
-            disabled = {!destination || !basePrice}>
+            type="submit"
+            disabled={!destination || !basePrice}>
             Create Destination
           </Button>
         </Form>

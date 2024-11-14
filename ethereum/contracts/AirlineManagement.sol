@@ -10,11 +10,13 @@ contract AirlineManagement {
         string class;
         bool roundTrip;
         bool isAvailable;
+        uint month;
     }
 
     address public ceo; //The CEO of the airlines
     string[] public destinations; //Array of the names of the destinations
     uint[] public destinationPrices; //Array of the prices for the destinations
+    uint[] public seats; //Amount of seats for each destination
     mapping(string => uint) public indexes; //Gives the index of the destination by passing its name
     uint[12] public monthMultiplier; //The multiplier for each month
     uint[3] public classMultiplier; //The multipler for each class type?
@@ -35,6 +37,7 @@ contract AirlineManagement {
         count = 0;
         destinations.push(destination);
         destinationPrices.push(destinationPrice);
+        seats[count] = 30;
         indexes[destination] = count;
         create30Tickets(msg.sender, destination, destinationPrice);
 
@@ -62,12 +65,14 @@ contract AirlineManagement {
 
     //Creates a destination
     function createDestination(string memory destination, uint destinationPrice) restricted public {
-        require(keccak256(abi.encodePacked(destinations[indexes[destination]])) != keccak256(abi.encodePacked(destination)));
+        require(keccak256(abi.encodePacked(destinations[indexes[destination]])) != keccak256(abi.encodePacked(destination)), "Error: This destination already exists!");
+        require(destinationPrice > 31, "Error: Base price cannot be below 30 Wei!");
         create30Tickets(msg.sender, destination, destinationPrice);
 
         destinations.push(destination);
         destinationPrices.push(destinationPrice);
         indexes[destination] = count;
+        seats[count] = 30;
         count++;
     }
 
@@ -75,12 +80,13 @@ contract AirlineManagement {
     function create30Tickets(address owner, string memory destination, uint256 price) public restricted {
         for (uint256 seat = 0; seat < 30; seat++) {
             uint256 tokenId = nextTicketId;
-            ticketDetails[tokenId] = Ticket(owner, destination, price, seat, "", false, true);
+            ticketDetails[tokenId] = Ticket(owner, destination, price, seat, "", false, true, 0);
             nextTicketId++;
         }
     }
 
     function getPrice (string memory destination, uint month, uint class, bool way) public view returns(uint) {
+        require(keccak256(abi.encodePacked(destinations[indexes[destination]])) == keccak256(abi.encodePacked(destination)), "Error: This destination doesn't exist!");        
         uint cm = classMultiplier[class - 1]; //class multiplier
         uint mm = monthMultiplier[month - 1]; //month multiplier
 
@@ -92,11 +98,11 @@ contract AirlineManagement {
         if(10 > mm)
             return price / mm;
         return price * (mm - 10);
-
     }
 
     function bookFlight(string memory destination, uint month, uint class, bool way) public payable{
         require(msg.value == getPrice(destination, month, class, way));
+        require(keccak256(abi.encodePacked(destinations[indexes[destination]])) == keccak256(abi.encodePacked(destination)), "Error: This destination doesn't exist!");
 
         // finds an available ticket for the destination
         bool booked = false;
@@ -111,6 +117,7 @@ contract AirlineManagement {
                 ticket.class = class == 1 ? "Economy" : class == 2 ? "Business" : "First";
                 ticket.roundTrip = way;
                 ticket.isAvailable = false;
+                ticket.month = month;
 
                 booked = true;
                 break;
@@ -122,7 +129,8 @@ contract AirlineManagement {
     }
 
     function isCeo(address user) public view returns(bool) {
-        return user == ceo;
+        require(user == ceo, "You are not the CEO!");
+        return true;
     } 
 
     function getBookedFlights(address user) public view returns (Ticket[] memory) {
