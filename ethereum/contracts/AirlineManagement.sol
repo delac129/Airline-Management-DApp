@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: GPL-3.0
-
 pragma solidity ^0.8.0;
 
 contract AirlineManagement {
@@ -57,13 +56,17 @@ contract AirlineManagement {
         classMultiplier[0] = 1;
         classMultiplier[1] = 2;
         classMultiplier[2] = 3;
+
+        count++;
     }
 
     //Creates a destination
     function createDestination(string memory destination, uint destinationPrice) restricted public {
         require(keccak256(abi.encodePacked(destinations[indexes[destination]])) != keccak256(abi.encodePacked(destination)));
         create30Tickets(msg.sender, destination, destinationPrice);
-        }
+
+        count++;
+    }
 
     //creates 30 tickets for a destination
     function create30Tickets(address owner, string memory destination, uint256 price) public restricted {
@@ -133,7 +136,7 @@ contract AirlineManagement {
         Ticket[] memory bookedTickets = new Ticket[](bookedCount);
         uint index = 0;
 
-        // Populate the array with the booked tickets
+        // array with the booked tickets
         for (uint tokenId = 0; tokenId < nextTicketId; tokenId++) {
             if (ticketDetails[tokenId].owner == user && !ticketDetails[tokenId].isAvailable) {
                 bookedTickets[index] = ticketDetails[tokenId];

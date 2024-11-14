@@ -5,7 +5,7 @@ import web3 from "../../ethereum/web3";
 import { Router } from "../../routes";
 import airline from "../../ethereum/campaign.js"
 
-class CampaignNew extends Component {
+class AirlineNew extends Component {
   state = {
     destination: "",
     basePrice: "",
@@ -21,8 +21,6 @@ class CampaignNew extends Component {
     }
     this.setState({errorMessage: ""});
 
-    console.log("Form submitted with:", this.state.destination, this.state.basePrice);
-
     
     this.setState({ loading: true, errorMessage: "" });
 
@@ -36,7 +34,7 @@ class CampaignNew extends Component {
 
       Router.pushRoute("/");
     } catch (err) {
-      this.setState({ errorMessage: "" });
+      this.setState({ errorMessage: "we" });
     }
     this.setState({ loading: false });
   };
@@ -83,4 +81,4 @@ class CampaignNew extends Component {
   }
 }
 
-export default CampaignNew;
+export default AirlineNew;
