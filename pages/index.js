@@ -1,6 +1,7 @@
 import React, { Component } from "react";
-import { Grid, Form, Input, Segment, Message, Card, Button, Dropdown } from "semantic-ui-react";
+import { Grid, Form, Input, Segment, Message, Button, Dropdown } from "semantic-ui-react";
 import management from "../ethereum/management";
+import web3 from "../ethereum/web3";
 import Layout from "../components/Layout";
 import { Link } from "../routes";
 
@@ -11,7 +12,24 @@ class CampaignIndex extends Component {
     travelClassIndex: "", // Stores the selected travel class index (0: Economy, 1: Business, 2: First Class)
     roundTrip: false,    // Added state for round trip
     errorMessage: "",
+    destinations: [],    // Array to store available destinations
   };
+
+  // Fetch destinations when the component mounts
+  async componentDidMount() {
+    // Get the total number of destinations from the contract
+    const totalDestinations = await management.methods.destinations.length().call(); 
+    const destinations = [];
+    
+    // Loop through all the destinations and fetch each one
+    for (let i = 0; i < totalDestinations; i++) {
+      const destination = await management.methods.destinations(i).call(); // Get destination by index
+      destinations.push(destination);
+    }
+
+    // Update state with the fetched destinations
+    this.setState({ destinations });
+  }
 
   onSubmit = (event) => {
     event.preventDefault();
@@ -49,8 +67,7 @@ class CampaignIndex extends Component {
   }
 
   render() {
-    const { destination, monthIndex, travelClassIndex, travelClass, roundTrip, errorMessage } = this.state;
-    const backgroundImageUrl = "./SpongePlane.webp"; 
+    const { destination, monthIndex, travelClassIndex, roundTrip, errorMessage, destinations } = this.state;
 
     // Dropdown options for months (January = index 0, December = index 11)
     const monthOptions = [
@@ -102,8 +119,8 @@ class CampaignIndex extends Component {
                     fluid
                     selection
                     options={monthOptions}
-                    value={monthIndex}  // This stores the selected month index (0-11)
-                    onChange={this.handleMonthChange}  // Updates state with selected month index
+                    value={monthIndex}
+                    onChange={this.handleMonthChange}
                   />
                 </Form.Field>
 
@@ -115,8 +132,8 @@ class CampaignIndex extends Component {
                     fluid
                     selection
                     options={classOptions}
-                    value={travelClassIndex}  // This stores the selected class index (0: Economy, 1: Business, 2: First Class)
-                    onChange={this.handleClassChange}  // Updates state with selected class index
+                    value={travelClassIndex}
+                    onChange={this.handleClassChange}
                   />
                 </Form.Field>
 
@@ -135,7 +152,7 @@ class CampaignIndex extends Component {
                 <Button
                   primary
                   type="submit"
-                  disabled={!destination || monthIndex === "" || travelClassIndex === "" || !travelClass} // Disable until all fields are filled
+                  disabled={!destination || monthIndex === "" || travelClassIndex === ""} // Disable until all fields are filled
                 >
                   Check Price
                 </Button>
@@ -143,14 +160,14 @@ class CampaignIndex extends Component {
                 <Button
                   primary
                   style={{ marginTop: "10px" }}
-                  disabled={!destination || monthIndex === "" || travelClassIndex === "" || !travelClass} // Disable until all fields are filled
+                  disabled={!destination || monthIndex === "" || travelClassIndex === ""} // Disable until all fields are filled
                 >
                   Book Now
                 </Button>
               </Form>
             </Grid.Column>
 
-            {/* Right Column: Empty box for Available Destinations */}
+            {/* Right Column: Display Available Destinations */}
             <Grid.Column width={8}>
               <Segment style={{ height: "100%", padding: "20px" }}>
                 <h4>Available Destinations</h4>
@@ -163,8 +180,16 @@ class CampaignIndex extends Component {
                     color: "#aaa",
                   }}
                 >
-                  {/* This will be filled dynamically in the future */}
-                  <p>No destinations available yet...</p>
+                  {/* Dynamically display destinations */}
+                  {destinations.length > 0 ? (
+                    <ul>
+                      {destinations.map((destination, index) => (
+                        <li key={index}>{destination}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No destinations available yet...</p>
+                  )}
                 </div>
               </Segment>
             </Grid.Column>
