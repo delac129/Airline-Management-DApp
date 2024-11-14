@@ -3,7 +3,7 @@ import { Grid, Form, Input, Segment, Message, Button, Dropdown } from "semantic-
 import management from "../ethereum/management";
 import web3 from "../ethereum/web3";
 import Layout from "../components/Layout";
-import { Link } from "../routes";
+import { Link, Router } from "../routes";
 
 class CampaignIndex extends Component {
   state = {
@@ -11,26 +11,27 @@ class CampaignIndex extends Component {
     monthIndex: "",      // Stores the selected month index (0-11)
     travelClassIndex: "", // Stores the selected travel class index (0: Economy, 1: Business, 2: First Class)
     roundTrip: false,    // Added state for round trip
-    errorMessage: "",
+    errorMessage: "",    // Error message state
     price: null,          // State to store the calculated price in wei
     destinations: [],    // Array to store available destinations
     loading: false,      // Added loading state for transaction
+    isManager: false,    // State to track if the user is the manager
   };
+
+  // Manager's address
+  managerAddress = "0x8B76333F7AE33F5f998989EBBE7d1A3479Bc417E";
 
   // Fetch destinations when the component mounts
   async componentDidMount() {
     try {
-      // Get the total number of destinations from the contract
       const totalDestinations = await management.methods.count().call();
       const destinations = [];
     
-      // Loop through all the destinations and fetch each one
       for (let i = 0; i < totalDestinations; i++) {
-        const destination = await management.methods.destinations(i).call(); // Get destination by index
+        const destination = await management.methods.destinations(i).call();
         destinations.push(destination);
       }
 
-      // Update state with the fetched destinations
       this.setState({ destinations });
     } catch (error) {
       console.error("Error fetching destinations:", error);
@@ -44,38 +45,32 @@ class CampaignIndex extends Component {
   
     const { destination, monthIndex, travelClassIndex, roundTrip, destinations } = this.state;
   
-    // Validate that all fields are filled
     if (!destination || monthIndex === "" || travelClassIndex === "") {
       this.setState({ errorMessage: "All fields are required!" });
       return;
     }
   
-    // Check if the destination exists in the list of available destinations
     if (!destinations.includes(destination)) {
       this.setState({
         errorMessage: "The entered destination is not available.",
-        price: null, // Clear the price if destination is invalid
+        price: null,
       });
       return;
     }
   
-    // Reset error message and price state if the destination is valid
     this.setState({ errorMessage: "", price: null });
   
     try {
-      // Call getPrice from the contract
       const priceInWei = await management.methods
         .getPrice(destination, monthIndex + 1, travelClassIndex + 1, roundTrip)
         .call();
   
-      // Update the price state with the returned value (price in wei)
       this.setState({ price: priceInWei });
     } catch (error) {
       console.error("Error fetching price:", error);
       this.setState({ errorMessage: "Failed to fetch price." });
     }
   };
-  
 
   // Handle month dropdown change
   handleMonthChange = (e, { value }) => {
@@ -92,36 +87,31 @@ class CampaignIndex extends Component {
   
     const { destination, monthIndex, travelClassIndex, roundTrip, price, destinations } = this.state;
   
-    // Validate that all fields are filled
     if (!destination || monthIndex === "" || travelClassIndex === "" || price === null) {
-      this.setState({ errorMessage: "All fields are required!", price: null }); // Clear price
+      this.setState({ errorMessage: "All fields are required!", price: null });
       return;
     }
   
-    // Check if the destination exists in the list of available destinations
     if (!destinations.includes(destination)) {
       this.setState({
         errorMessage: "The entered destination is not available.",
-        price: null, // Clear the price if the destination is invalid
+        price: null,
       });
       return;
     }
   
-    // Reset error message and set loading state
     this.setState({ errorMessage: "", loading: true });
   
     try {
       const accounts = await web3.eth.getAccounts();
   
-      // Call bookFlight from the contract (paying the price in wei)
       await management.methods
         .bookFlight(destination, monthIndex + 1, travelClassIndex + 1, roundTrip)
         .send({
           from: accounts[0],
-          value: price, // Sending the price (in wei) to complete the transaction
+          value: price,
         });
   
-      // On success, reset loading state and show success message
       this.setState({ loading: false, errorMessage: "", price: null });
       alert("Flight booked successfully!");
     } catch (error) {
@@ -129,17 +119,26 @@ class CampaignIndex extends Component {
       this.setState({
         errorMessage: "Failed to book the flight. Please try again.",
         loading: false,
-        price: null, // Clear price if there is an error
+        price: null,
       });
     }
   };
-  
 
+  // Handle Manager Access Button click
+  handleManagerAccess = async () => {
+    const accounts = await web3.eth.getAccounts();
+    const currentAccount = accounts[0];
+
+    if (currentAccount.toLowerCase() !== this.managerAddress.toLowerCase()) {
+      this.setState({ errorMessage: "You must be the manager to access this page." });
+    } else {
+      Router.pushRoute('/campaigns/new');
+    }
+  };
 
   render() {
     const { destination, monthIndex, travelClassIndex, roundTrip, errorMessage, price, destinations, loading } = this.state;
 
-    // Dropdown options for months (January = index 0, December = index 11)
     const monthOptions = [
       { key: 0, text: "January", value: 0 },
       { key: 1, text: "February", value: 1 },
@@ -155,7 +154,6 @@ class CampaignIndex extends Component {
       { key: 11, text: "December", value: 11 },
     ];
 
-    // Dropdown options for travel class (Economy = index 0, Business = index 1, First Class = index 2)
     const classOptions = [
       { key: 0, text: "Economy", value: 0 },
       { key: 1, text: "Business", value: 1 },
@@ -166,12 +164,9 @@ class CampaignIndex extends Component {
       <Layout>
         <Grid divided="vertically">
           <Grid.Row columns={2}>
-            {/* Left Column: Text boxes for inputs */}
             <Grid.Column width={8}>
               <h3>Book Flight</h3>
               <Form onSubmit={this.onCheckPrice} error={!!errorMessage}>
-                
-                {/* Select Destination Text Box */}
                 <Form.Field>
                   <label>Select Destination</label>
                   <Input
@@ -181,7 +176,6 @@ class CampaignIndex extends Component {
                   />
                 </Form.Field>
 
-                {/* Dropdown for Select Month */}
                 <Form.Field>
                   <label>Select Month</label>
                   <Dropdown
@@ -194,7 +188,6 @@ class CampaignIndex extends Component {
                   />
                 </Form.Field>
 
-                {/* Dropdown for Select Class */}
                 <Form.Field>
                   <label>Select Class</label>
                   <Dropdown
@@ -207,7 +200,6 @@ class CampaignIndex extends Component {
                   />
                 </Form.Field>
 
-                {/* Round Trip Checkbox */}
                 <Form.Field>
                   <Form.Checkbox
                     label="Round Trip"
@@ -216,13 +208,10 @@ class CampaignIndex extends Component {
                   />
                 </Form.Field>
 
-                {errorMessage && <Message error content={errorMessage} />}
-
-                {/* Buttons */}
                 <Button
                   primary
                   type="submit"
-                  disabled={!destination || monthIndex === "" || travelClassIndex === ""} // Disable until all fields are filled
+                  disabled={!destination || monthIndex === "" || travelClassIndex === ""}
                 >
                   Check Price
                 </Button>
@@ -231,34 +220,27 @@ class CampaignIndex extends Component {
                   primary
                   style={{ marginTop: "10px" }}
                   onClick={this.onBookNow}
-                  loading={loading} // Show loading indicator while booking
-                  disabled={!destination || monthIndex === "" || travelClassIndex === "" || !price} // Disable until all fields are filled and price is fetched
+                  loading={loading}
+                  disabled={!destination || monthIndex === "" || travelClassIndex === "" || !price}
                 >
                   Book Now
                 </Button>
               </Form>
 
-              {/* Display Price if available */}
               {price !== null && (
-                <Message
-                  success
-                  content={`The price for your selected flight is: ${price} Wei`}
-                />
+                <Message success content={`The price for your selected flight is: ${price} Wei`} />
               )}
             </Grid.Column>
 
-            {/* Right Column: Display Available Destinations */}
             <Grid.Column width={8}>
               <Segment style={{ height: "100%", padding: "20px" }}>
                 <h4>Available Destinations</h4>
                 <div style={{ height: "200px", overflowY: "scroll", paddingRight: "20px" }}>
-                  {/* Dynamically display destinations */}
                   {destinations.length > 0 ? (
                     <Grid>
                       {destinations.map((destination, index) => (
                         <Grid.Row key={index}>
                           <Grid.Column width={16}>
-                            {/* Destination Name */}
                             <p>{destination}</p>
                           </Grid.Column>
                         </Grid.Row>
@@ -273,16 +255,34 @@ class CampaignIndex extends Component {
           </Grid.Row>
         </Grid>
 
-        {/* Manager Access Button */}
-        <Link route="/campaigns/new">
-          <a>
-            <Button floated="right" content="Manager Access" icon="lock" primary />
-          </a>
-        </Link>
+        <Button
+          floated="right"
+          content="Manager Access"
+          icon="lock"
+          primary
+          onClick={this.handleManagerAccess}
+          style={{ marginBottom: "20px" }}
+        />
+
+        {errorMessage && (
+          <Message
+            error
+            content={errorMessage}
+            style={{
+              position: "fixed",
+              bottom: "50px", // 50px from the bottom
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 1000,
+              margin: 0,
+              width: "90%", // Adjust width
+              maxWidth: "500px", // Max width for better responsiveness
+            }}
+          />
+        )}
       </Layout>
     );
   }
 }
 
 export default CampaignIndex;
-
