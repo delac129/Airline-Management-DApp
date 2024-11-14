@@ -65,6 +65,9 @@ contract AirlineManagement {
         require(keccak256(abi.encodePacked(destinations[indexes[destination]])) != keccak256(abi.encodePacked(destination)));
         create30Tickets(msg.sender, destination, destinationPrice);
 
+        destinations.push(destination);
+        destinationPrices.push(destinationPrice);
+        indexes[destination] = count;
         count++;
     }
 
