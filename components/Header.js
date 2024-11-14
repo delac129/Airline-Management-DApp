@@ -9,17 +9,13 @@ const Header = () => {
         <a className="item">Home Page</a>
       </Link>
 
-     
-
       <Menu.Menu position="right">
         <Link href="/campaigns/booked">
           <a className="item">Booked Flights</a>
         </Link>
       </Menu.Menu>
-
-        
-      
     </Menu>
+    
   );
 };
 

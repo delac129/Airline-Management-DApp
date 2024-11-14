@@ -5,6 +5,8 @@ import web3 from "../ethereum/web3";
 import Layout from "../components/Layout";
 import { Router } from "../routes";
 
+import logo from '../assets/SpongePlane.webp';
+
 class CampaignIndex extends Component {
   state = {
     destination: "",     // Stores the destination (string)
@@ -191,6 +193,10 @@ class CampaignIndex extends Component {
 
     return (
       <Layout>
+        <div style={{ display: "flex", justifyContent: "center", padding: "20px 0" }}>
+          <img src={logo} alt="Logo" style={{ maxHeight: "100px", maxWidth: "100%" }} />
+        </div>
+
         <Grid divided="vertically">
           <Grid.Row columns={2}>
             <Grid.Column width={8}>
