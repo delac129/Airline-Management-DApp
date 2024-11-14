@@ -92,7 +92,7 @@ class CampaignIndex extends Component {
   onBookNow = async (event) => {
     event.preventDefault();
 
-    const { destination, monthIndex, travelClassIndex, roundTrip, price, destinations } = this.state;
+    const { destination, monthIndex, travelClassIndex, roundTrip, price, destinations, seatsLeft } = this.state;
 
     if (!destination || monthIndex === "" || travelClassIndex === "" || price === null) {
       this.setState({ errorMessage: "All fields are required!", price: null });
@@ -112,6 +112,7 @@ class CampaignIndex extends Component {
     try {
       const accounts = await web3.eth.getAccounts();
 
+      // Send the transaction to book the flight
       await management.methods
         .bookFlight(destination, monthIndex + 1, travelClassIndex + 1, roundTrip)
         .send({
@@ -119,10 +120,25 @@ class CampaignIndex extends Component {
           value: price,
         });
 
-      // After booking, update the number of seats left
-      this.updateSeatsLeft(destination);
+      // Update the seats left for the booked destination
+      const destinationIndex = destinations.indexOf(destination);
+      const updatedSeats = parseInt(seatsLeft[destinationIndex]) - 1;
 
-      this.setState({ loading: false, errorMessage: "", price: null });
+      // Fetch the updated seats left from the contract (optional but recommended)
+      const updatedSeatsFromContract = await management.methods.seats(destinationIndex).call();
+
+      // Update the state
+      this.setState((prevState) => {
+        const newSeatsLeft = [...prevState.seatsLeft];
+        newSeatsLeft[destinationIndex] = updatedSeatsFromContract.toString(); // Update seatsLeft
+        return { 
+          loading: false, 
+          errorMessage: "", 
+          price: null,
+          seatsLeft: newSeatsLeft, // Update the state with new seats count
+        };
+      });
+
       alert("Flight booked successfully!");
     } catch (error) {
       console.error("Error booking flight:", error);
@@ -131,27 +147,6 @@ class CampaignIndex extends Component {
         loading: false,
         price: null,
       });
-    }
-  };
-
-  // Method to update the seats left for the booked destination
-  updateSeatsLeft = async (destination) => {
-    try {
-      const totalDestinations = await management.methods.count().call();
-      const updatedSeatsLeft = [...this.state.seatsLeft];
-
-      // Loop through destinations to update the seats left for the booked destination
-      for (let i = 0; i < totalDestinations; i++) {
-        const currentDestination = await management.methods.destinations(i).call();
-        if (currentDestination === destination) {
-          const updatedSeats = await management.methods.seats(i).call();
-          updatedSeatsLeft[i] = updatedSeats.toString();
-        }
-      }
-
-      this.setState({ seatsLeft: updatedSeatsLeft });
-    } catch (error) {
-      console.error("Error updating seats left:", error);
     }
   };
 
@@ -296,7 +291,25 @@ class CampaignIndex extends Component {
           icon="lock"
           primary
           onClick={this.handleManagerAccess}
+          style={{ marginBottom: "20px" }}
         />
+
+        {errorMessage && (
+          <Message
+            error
+            content={errorMessage}
+            style={{
+              position: "fixed",
+              bottom: "50px", // 50px from the bottom
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 1000,
+              margin: 0,
+              width: "90%", // Adjust width
+              maxWidth: "500px", // Max width for better responsiveness
+            }}
+          />
+        )}
       </Layout>
     );
   }
