@@ -17,7 +17,6 @@ class BookedNew extends Component {
     "July", "August", "September", "October", "November", "December"
   ];
 
-  // get booked flights for the logged in user
   async componentDidMount() {
     try {
       const accounts = await web3.eth.getAccounts();

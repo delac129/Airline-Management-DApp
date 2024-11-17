@@ -10,22 +10,20 @@ import logo from '../assets/download.png';
 
 class CampaignIndex extends Component {
   state = {
-    destination: "",     // Stores the destination (string)
-    monthIndex: "",      // Stores the selected month index (0-11)
-    travelClassIndex: "", // Stores the selected travel class index (0: Economy, 1: Business, 2: First Class)
-    roundTrip: false,    // Added state for round trip
-    errorMessage: "",    // Error message state
-    price: null,          // State to store the calculated price in wei
-    destinations: [],    // Array to store available destinations
-    seatsLeft: [],       // Array to store the number of seats left for each destination
-    loading: false,      // Added loading state for transaction
-    isManager: false,    // State to track if the user is the manager
+    destination: "",     
+    monthIndex: "",      
+    travelClassIndex: "", 
+    roundTrip: false,    
+    errorMessage: "",    
+    price: null,          
+    destinations: [],    
+    seatsLeft: [],       
+    loading: false,      
+    isManager: false,    
   };
 
-  // Manager's address
   managerAddress = "0x8B76333F7AE33F5f998989EBBE7d1A3479Bc417E";
 
-  // Fetch destinations and seats when the component mounts
   async componentDidMount() {
     try {
       console.log(logo);
@@ -35,13 +33,13 @@ class CampaignIndex extends Component {
       const destinations = [];
       const seatsLeft = [];
 
-      // Loop through destinations to get names and available seats
       for (let i = 0; i < totalDestinations; i++) {
         const destination = await management.methods.destinations(i).call();
         const seats = await management.methods.seats(i).call();
         destinations.push(destination);
-        seatsLeft.push(seats.toString()); // Convert BigInt to string
+        seatsLeft.push(seats.toString()); 
       }
+
 
       this.setState({ destinations, seatsLeft });
     } catch (error) {
@@ -50,7 +48,6 @@ class CampaignIndex extends Component {
     }
   }
 
-  // Handle form submission (on "Check Price" button)
   onCheckPrice = async (event) => {
     event.preventDefault();
 
@@ -83,12 +80,10 @@ class CampaignIndex extends Component {
     }
   };
 
-  // Handle month dropdown change
   handleMonthChange = (e, { value }) => {
     this.setState({ monthIndex: value });
   };
 
-  // Handle class dropdown change
   handleClassChange = (e, { value }) => {
     this.setState({ travelClassIndex: value });
   };
@@ -116,7 +111,6 @@ class CampaignIndex extends Component {
     try {
       const accounts = await web3.eth.getAccounts();
 
-      // Send the transaction to book the flight
       await management.methods
         .bookFlight(destination, monthIndex + 1, travelClassIndex + 1, roundTrip)
         .send({
@@ -124,22 +118,19 @@ class CampaignIndex extends Component {
           value: price,
         });
 
-      // Update the seats left for the booked destination
       const destinationIndex = destinations.indexOf(destination);
       const updatedSeats = parseInt(seatsLeft[destinationIndex]) - 1;
 
-      // Fetch the updated seats left from the contract (optional but recommended)
       const updatedSeatsFromContract = await management.methods.seats(destinationIndex).call();
 
-      // Update the state
       this.setState((prevState) => {
         const newSeatsLeft = [...prevState.seatsLeft];
-        newSeatsLeft[destinationIndex] = updatedSeatsFromContract.toString(); // Update seatsLeft
+        newSeatsLeft[destinationIndex] = updatedSeatsFromContract.toString(); 
         return { 
           loading: false, 
           errorMessage: "", 
           price: null,
-          seatsLeft: newSeatsLeft, // Update the state with new seats count
+          seatsLeft: newSeatsLeft, 
         };
       });
 
@@ -154,12 +145,16 @@ class CampaignIndex extends Component {
     }
   };
 
-  // Handle Manager Access Button click
   handleManagerAccess = async () => {
     const accounts = await web3.eth.getAccounts();
-    const currentAccount = accounts[0];
 
-    if (currentAccount.toLowerCase() !== this.managerAddress.toLowerCase()) {
+    let isCeo = false;
+    try {
+      isCeo = await management.methods.isCeo(accounts[0]).call();
+    } catch (error){} 
+    
+
+    if (!isCeo) {
       this.setState({ errorMessage: "You must be the manager to access this page." });
     } else {
       Router.pushRoute('/campaigns/new');
@@ -313,13 +308,13 @@ class CampaignIndex extends Component {
             content={errorMessage}
             style={{
               position: "fixed",
-              bottom: "50px", // 50px from the bottom
+              bottom: "50px", 
               left: "50%",
               transform: "translateX(-50%)",
               zIndex: 1000,
               margin: 0,
-              width: "90%", // Adjust width
-              maxWidth: "500px", // Max width for better responsiveness
+              width: "90%", 
+              maxWidth: "500px", 
             }}
           />
         )}
