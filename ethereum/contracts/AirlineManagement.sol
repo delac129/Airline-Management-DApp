@@ -24,7 +24,6 @@ contract AirlineManagement {
     bool public canPayout; //If the CEO can collect money
     uint public payAmount; //The amount the ceo can collect (30%)
 
-    // for associating ticket with NFTs
     mapping(uint256 => Ticket) public ticketDetails;
     uint256 public nextTicketId;
 
@@ -81,7 +80,7 @@ contract AirlineManagement {
     }
 
     //creates 30 tickets for a destination
-    function create30Tickets(address owner, string memory destination, uint256 price) public restricted {
+    function create30Tickets(address owner, string memory destination, uint256 price) private restricted {
         for (uint256 seat = 0; seat < 30; seat++) {
             uint256 tokenId = nextTicketId;
             ticketDetails[tokenId] = Ticket(owner, destination, price, seat, "", false, true, 0);
