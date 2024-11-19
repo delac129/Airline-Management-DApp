@@ -9,6 +9,8 @@ import Image from 'next/image';
 import logo from '../assets/download.png';
 
 class CampaignIndex extends Component {
+
+  //state variables to update after certain interactions
   state = {
     destination: "",     
     monthIndex: "",      
@@ -24,12 +26,12 @@ class CampaignIndex extends Component {
     managerAddress: ""
   };
 
-
+  
   async componentDidMount() {
     try {
+      //display who is logged in
       const accounts = await web3.eth.getAccounts();
       let managerAddress = await management.methods.ceo().call();
-      console.log("The manager is: ", managerAddress);
 
       const userTypeMessage = (accounts[0] == managerAddress) 
         ? "CEO is logged in" 
@@ -37,10 +39,12 @@ class CampaignIndex extends Component {
       
       this.setState({ userTypeMessage });
 
+      //get totalDestinations count
       const totalDestinations = await management.methods.count().call();
       const destinations = [];
       const seatsLeft = [];
-
+      
+      //loop through each destination to display them onto the home page
       for (let i = 0; i < totalDestinations; i++) {
         const destination = await management.methods.destinations(i).call();
         const seats = await management.methods.seats(i).call();
@@ -60,11 +64,13 @@ class CampaignIndex extends Component {
 
     const { destination, monthIndex, travelClassIndex, roundTrip, destinations } = this.state;
 
+    //check the current state to make sure no boxes are left empty
     if (!destination || monthIndex === "" || travelClassIndex === "") {
       this.setState({ errorMessage: "All fields are required!" });
       return;
     }
 
+    //check to see if the current entered destination exists
     if (!destinations.includes(destination)) {
       this.setState({
         errorMessage: "The entered destination is not available.",
@@ -75,6 +81,7 @@ class CampaignIndex extends Component {
 
     this.setState({ errorMessage: "", price: null });
 
+    //display the price in wei
     try {
       const priceInWei = await management.methods
         .getPrice(destination, monthIndex + 1, travelClassIndex + 1, roundTrip)
@@ -87,10 +94,12 @@ class CampaignIndex extends Component {
     }
   };
 
+  //get the index of the dropdown menu for month
   handleMonthChange = (e, { value }) => {
     this.setState({ monthIndex: value });
   };
 
+  //get the index of the dropdown menu for class
   handleClassChange = (e, { value }) => {
     this.setState({ travelClassIndex: value });
   };
@@ -100,11 +109,13 @@ class CampaignIndex extends Component {
 
     const { destination, monthIndex, travelClassIndex, roundTrip, price, destinations, seatsLeft } = this.state;
 
+    //make sure all boxes are filled in
     if (!destination || monthIndex === "" || travelClassIndex === "" || price === null) {
       this.setState({ errorMessage: "All fields are required!", price: null });
       return;
     }
 
+    //make sure destination exists
     if (!destinations.includes(destination)) {
       this.setState({
         errorMessage: "The entered destination is not available.",
@@ -118,6 +129,7 @@ class CampaignIndex extends Component {
     try {
       const accounts = await web3.eth.getAccounts();
 
+      //take the information from the boxes and properly pass them with bookFlight, the indexes indicate which multiplier to use
       await management.methods
         .bookFlight(destination, monthIndex + 1, travelClassIndex + 1, roundTrip)
         .send({
@@ -129,7 +141,8 @@ class CampaignIndex extends Component {
       const updatedSeats = parseInt(seatsLeft[destinationIndex]) - 1;
 
       const updatedSeatsFromContract = await management.methods.seats(destinationIndex).call();
-
+      
+      //update the amount of seats left
       this.setState((prevState) => {
         const newSeatsLeft = [...prevState.seatsLeft];
         newSeatsLeft[destinationIndex] = updatedSeatsFromContract.toString(); 
@@ -141,6 +154,7 @@ class CampaignIndex extends Component {
         };
       });
 
+      //pop up alerting the user the flight has been booked
       alert("Flight booked successfully!");
     } catch (error) {
       console.error("Error booking flight:", error);
@@ -153,6 +167,7 @@ class CampaignIndex extends Component {
   };
 
   handleManagerAccess = async () => {
+    //when the Manager Access button is clicked, it double checks who is currently logged in
     const accounts = await web3.eth.getAccounts();
 
     let isCeo = false;
@@ -160,9 +175,9 @@ class CampaignIndex extends Component {
       isCeo = await management.methods.isCeo(accounts[0]).call();
     } catch (error){} 
     
-
+    //display the appropriate message to the user if they are not the CEO
     if (!isCeo) {
-      this.setState({ errorMessage: "You must be the manager to access this page." });
+      this.setState({ errorMessage: "You must be the CEO to access this page." });
     } else {
       Router.pushRoute('/campaigns/new');
     }
@@ -170,7 +185,7 @@ class CampaignIndex extends Component {
 
   render() {
     const { destination, monthIndex, travelClassIndex, roundTrip, errorMessage, price, destinations, seatsLeft, loading, userTypeMessage } = this.state;
-
+    //the indexes for each month
     const monthOptions = [
       { key: 0, text: "January", value: 0 },
       { key: 1, text: "February", value: 1 },
@@ -185,7 +200,7 @@ class CampaignIndex extends Component {
       { key: 10, text: "November", value: 10 },
       { key: 11, text: "December", value: 11 },
     ];
-
+    //indexes for each class
     const classOptions = [
       { key: 0, text: "Economy", value: 0 },
       { key: 1, text: "Business", value: 1 },
@@ -224,7 +239,7 @@ class CampaignIndex extends Component {
                     onChange={(e) => this.setState({ destination: e.target.value })}
                   />
                 </Form.Field>
-
+                
                 <Form.Field>
                   <label>Select Month</label>
                   <Dropdown
@@ -306,7 +321,7 @@ class CampaignIndex extends Component {
 
         <Button
           floated="right"
-          content="Manager Access"
+          content="CEO Access"
           icon="lock"
           primary
           onClick={this.handleManagerAccess}
