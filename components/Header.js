@@ -10,7 +10,7 @@ const Header = () => {
       </Link>
 
       <Menu.Menu position="right">
-        <Link href="/campaigns/booked">
+        <Link href="/flights/booked">
           <a className="item">Booked Flights</a>
         </Link>
       </Menu.Menu>

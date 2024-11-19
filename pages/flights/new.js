@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { Form, Button, Input, Message } from "semantic-ui-react";
-import Layout from "../../components/Layout";
-import web3 from "../../ethereum/web3";
-import { Router } from "../../routes";
+import Layout from "../../components/Layout.js";
+import web3 from "../../ethereum/web3.js";
+import { Router } from "../../routes.js";
 import airline from "../../ethereum/management.js"
 
 class AirlineNew extends Component {
