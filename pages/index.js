@@ -20,26 +20,23 @@ class CampaignIndex extends Component {
     seatsLeft: [],       
     loading: false,      
     isManager: false,    
-    userTypeMessage: "",  // Add state to store the user type message
+    userTypeMessage: "",  
     managerAddress: ""
   };
 
-  //managerAddress = "0x8B76333F7AE33F5f998989EBBE7d1A3479Bc417E";  // Hardcoded manager address
 
   async componentDidMount() {
     try {
       const accounts = await web3.eth.getAccounts();
       let managerAddress = await management.methods.ceo().call();
       console.log("The manager is: ", managerAddress);
-      // Check if the logged-in address matches the manager address
+
       const userTypeMessage = (accounts[0] == managerAddress) 
         ? "CEO is logged in" 
-        : "Customer is logged in";
+        : `Customer ${accounts[0]} is logged in`;
       
-      // Set the state with the message
       this.setState({ userTypeMessage });
 
-      // Fetch destinations and seats information
       const totalDestinations = await management.methods.count().call();
       const destinations = [];
       const seatsLeft = [];
@@ -197,7 +194,6 @@ class CampaignIndex extends Component {
 
     return (
       <Layout>
-        {/* Display the user type message at the top of the page */}
         <div style={{ textAlign: "center", fontSize: "1.2rem", margin: "10px 0", fontWeight: "bold" }}>
           {userTypeMessage}
         </div>
