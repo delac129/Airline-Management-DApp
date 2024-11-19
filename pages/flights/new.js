@@ -6,6 +6,7 @@ import { Router } from "../../routes.js";
 import airline from "../../ethereum/management.js"
 
 class AirlineNew extends Component {
+  //state variables to update after certain interactions
   state = {
     destination: "",
     basePrice: "",
@@ -19,43 +20,46 @@ class AirlineNew extends Component {
     const worth = (await web3.eth.getBalance(airline.options.address)).toString();
     const canPay = await airline.methods.canPayout().call();
     const payment = (await airline.methods.payAmount().call() * BigInt(9) / BigInt(10)).toString();
-
+    //initializing the state at the start with the correct information
     this.setState({ worth, canPay, payment });
   }
 
   onSubmit = async (event) => {
     event.preventDefault();
-
+    //get the index of the current destination from our contract
     const index = await airline.methods.indexes(this.state.destination).call();
     const length = await airline.methods.count().call();
     let name = ""
-
+    
     if (index < length)
       name = await airline.methods.destinations(index).call();
 
     const exists = (name == this.state.destination);
+    //if the destination exists, it displays the proper message and does not duplicate the same destination
     if (exists) {
       this.setState({ errorMessage: "The destination already exixsts!" });
       return;
     }
 
+    //making sure the baseprice is greater than 30 wei
     const basePrice = Number(this.state.basePrice);
     if (basePrice <= 30) {
       this.setState({ errorMessage: "The base price must be greater than 30 Wei!" });
       return;
     }
-
+    //make sure all boxes are filled in
     if (!this.state.destination || !this.state.basePrice) {
       this.setState({ errorMessage: "Both fields are required!" });
       return;
     }
     this.setState({ errorMessage: "" });
 
-
     this.setState({ loading: true, errorMessage: "" });
 
     try {
       const accounts = await web3.eth.getAccounts();
+
+      //attempting to create destination
       await airline.methods
         .createDestination(this.state.destination, this.state.basePrice)
         .send({
@@ -63,10 +67,12 @@ class AirlineNew extends Component {
         });
 
       alert("Destination Created Succesfully!");
+
+      //automatically take user to home page after the destination is created
       Router.pushRoute("/");
     } catch (err) {
       let errorMessage = "An error occurred.";
-
+      //display proper error message if the destination was not created
       if (err.message.includes("revert")) {
         const revertMessage = err.message.split("revert ")[1];
         if (revertMessage) {
@@ -88,13 +94,15 @@ class AirlineNew extends Component {
     try {
       const accounts = await web3.eth.getAccounts();
       await airline.methods.payCEO().send({ from: accounts[0] });
-
+      
+      //reset values after CEO is paid
       const worth = (await web3.eth.getBalance(airline.options.address)).toString();
       const canPay = await airline.methods.canPayout().call();
       const payment = (await airline.methods.payAmount().call() * BigInt(7) / BigInt(10)).toString();
-
+      //reset state values
       this.setState({ worth, canPay, payment });
 
+      //properly alert the CEO that the payment has gone through
       alert("You were payed Succesfully!");
     }
     catch (err) {
