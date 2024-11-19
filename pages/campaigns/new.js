@@ -78,7 +78,6 @@ class AirlineNew extends Component {
         errorMessage = err.message;
       }
 
-      // Display the error message
       this.setState({ errorMessage });
     }
     this.setState({ loading: false });
