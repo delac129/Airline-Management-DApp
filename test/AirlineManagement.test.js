@@ -15,14 +15,13 @@ beforeEach(async () => {
   console.log = () => {}; //info in termial
   accounts = await web3.eth.getAccounts();
 
-  // Deploy the AirlineManagement contract with arguments
   airlineManagement = await new web3.eth.Contract(compiledFactory.abi)
     .deploy({
       data: compiledFactory.evm.bytecode.object,
       arguments: ["Miami", "70"]
     })
     .send({ from: accounts[0], gas: "10000000000" });
-    
+
   console.log = ogLog; //To reduce info in terminal
   console.log("AirlineManagement contract deployed at: ", airlineManagement.options.address);
 });
