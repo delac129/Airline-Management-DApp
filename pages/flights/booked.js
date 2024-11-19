@@ -54,7 +54,7 @@ class BookedNew extends Component {
           <Message error content={errorMessage} />
         )}
 
-        //if user has no booked flights
+        {/*if user has no booked flights*/}
         {bookedFlights.length === 0 && !loading && !errorMessage && (
           <Segment style={{ marginTop: "20px" }}>
             <h4>No booked flights yet.</h4>
@@ -62,7 +62,7 @@ class BookedNew extends Component {
           </Segment>
         )}
 
-        //if user has booked flights, display each and their info
+        {/*if user has booked flights, display each and their info*/}
         {bookedFlights.length > 0 && !loading && !errorMessage && (
           <Segment style={{ marginTop: "20px" }}>
             <h4>Booked Flights</h4>
