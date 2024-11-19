@@ -21,17 +21,19 @@ class CampaignIndex extends Component {
     loading: false,      
     isManager: false,    
     userTypeMessage: "",  // Add state to store the user type message
+    managerAddress: ""
   };
 
-  managerAddress = "0x8B76333F7AE33F5f998989EBBE7d1A3479Bc417E";  // Hardcoded manager address
+  //managerAddress = "0x8B76333F7AE33F5f998989EBBE7d1A3479Bc417E";  // Hardcoded manager address
 
   async componentDidMount() {
     try {
       const accounts = await web3.eth.getAccounts();
-      
+      let managerAddress = await management.methods.ceo().call();
+      console.log("The manager is: ", managerAddress);
       // Check if the logged-in address matches the manager address
-      const userTypeMessage = (accounts[0] === this.managerAddress) 
-        ? "Ceo is logged in" 
+      const userTypeMessage = (accounts[0] == managerAddress) 
+        ? "CEO is logged in" 
         : "Customer is logged in";
       
       // Set the state with the message
