@@ -20,15 +20,24 @@ class CampaignIndex extends Component {
     seatsLeft: [],       
     loading: false,      
     isManager: false,    
+    userTypeMessage: "",  // Add state to store the user type message
   };
 
-  managerAddress = "0x8B76333F7AE33F5f998989EBBE7d1A3479Bc417E";
+  managerAddress = "0x8B76333F7AE33F5f998989EBBE7d1A3479Bc417E";  // Hardcoded manager address
 
   async componentDidMount() {
     try {
-      console.log(logo);
+      const accounts = await web3.eth.getAccounts();
+      
+      // Check if the logged-in address matches the manager address
+      const userTypeMessage = (accounts[0] === this.managerAddress) 
+        ? "Ceo is logged in" 
+        : "Customer is logged in";
+      
+      // Set the state with the message
+      this.setState({ userTypeMessage });
 
-
+      // Fetch destinations and seats information
       const totalDestinations = await management.methods.count().call();
       const destinations = [];
       const seatsLeft = [];
@@ -39,7 +48,6 @@ class CampaignIndex extends Component {
         destinations.push(destination);
         seatsLeft.push(seats.toString()); 
       }
-
 
       this.setState({ destinations, seatsLeft });
     } catch (error) {
@@ -162,7 +170,7 @@ class CampaignIndex extends Component {
   };
 
   render() {
-    const { destination, monthIndex, travelClassIndex, roundTrip, errorMessage, price, destinations, seatsLeft, loading } = this.state;
+    const { destination, monthIndex, travelClassIndex, roundTrip, errorMessage, price, destinations, seatsLeft, loading, userTypeMessage } = this.state;
 
     const monthOptions = [
       { key: 0, text: "January", value: 0 },
@@ -187,18 +195,23 @@ class CampaignIndex extends Component {
 
     return (
       <Layout>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '20vh' }}>
-      <Image
-        src={logo}
-        alt="Logo"
-        height={225}
-        width={225}
-      />
+        {/* Display the user type message at the top of the page */}
+        <div style={{ textAlign: "center", fontSize: "1.2rem", margin: "10px 0", fontWeight: "bold" }}>
+          {userTypeMessage}
+        </div>
 
-<div style={{ fontSize: '4rem', fontWeight: 'bold', marginLeft: '20px', color: '#333' }}>
-        Wi-Fly Airlines
-      </div>
-    </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '20vh' }}>
+          <Image
+            src={logo}
+            alt="Logo"
+            height={225}
+            width={225}
+          />
+
+          <div style={{ fontSize: '4rem', fontWeight: 'bold', marginLeft: '20px', color: '#333' }}>
+            Wi-Fly Airlines
+          </div>
+        </div>
 
         <Grid divided="vertically">
           <Grid.Row columns={2}>
