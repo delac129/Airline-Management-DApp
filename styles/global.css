@@ -35,7 +35,7 @@ div.thang {
 .payout-container {
   display: flex;
   justify-content: center;
-  margin-top: 20px; /* Adds space between the worth and the payout button */
+  margin-top: 20px;
 }
 
 .payout-container .ui.primary.button {

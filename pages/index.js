@@ -8,7 +8,7 @@ import Image from 'next/image';
 
 import logo from '../assets/download.png';
 
-class CampaignIndex extends Component {
+class FlightIndex extends Component {
   state = {
     destination: "",     
     monthIndex: "",      
@@ -164,7 +164,7 @@ class CampaignIndex extends Component {
     if (!isCeo) {
       this.setState({ errorMessage: "You must be the manager to access this page." });
     } else {
-      Router.pushRoute('/campaigns/new');
+      Router.pushRoute('/flights/new');
     }
   };
 
@@ -334,4 +334,4 @@ class CampaignIndex extends Component {
   }
 }
 
-export default CampaignIndex;
+export default FlightIndex;
