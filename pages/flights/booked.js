@@ -12,26 +12,30 @@ class BookedNew extends Component {
     errorMessage: "",
   };
 
+  //to convert from number to string
   monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
 
   async componentDidMount() {
+
+    //in case no one is logged in
     try {
       const accounts = await web3.eth.getAccounts();
       if (!accounts.length) {
         this.setState({ errorMessage: "There are no accounts" });
         return;
       }
-      
+
+      //get all flights for user
       const bookedFlights = await airline.methods.getBookedFlights(accounts[0]).call();
-      
       this.setState({ bookedFlights, loading: false });
+
     } catch (error) {
       console.error(error);
       this.setState({
-        errorMessage: "Failed to load booked flights. Please try again later.",
+        errorMessage: "Failed to load booked flights. Please try again later.", //in case, but never came across
         loading: false,
       });
     }
@@ -44,13 +48,13 @@ class BookedNew extends Component {
       <Layout>
         <h3>Booked Flights</h3>
 
-        {/* Displaying booked flights */}
         {loading && <Loader active inline='centered' />}
         
         {errorMessage && (
           <Message error content={errorMessage} />
         )}
 
+        //if user has no booked flights
         {bookedFlights.length === 0 && !loading && !errorMessage && (
           <Segment style={{ marginTop: "20px" }}>
             <h4>No booked flights yet.</h4>
@@ -58,6 +62,7 @@ class BookedNew extends Component {
           </Segment>
         )}
 
+        //if user has booked flights, display each and their info
         {bookedFlights.length > 0 && !loading && !errorMessage && (
           <Segment style={{ marginTop: "20px" }}>
             <h4>Booked Flights</h4>

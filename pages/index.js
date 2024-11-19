@@ -8,7 +8,6 @@ import Image from 'next/image';
 
 import logo from '../assets/download.png';
 
-
 class FlightIndex extends Component {
   state = {
     destination: "",     
