@@ -3,7 +3,7 @@ import AirlineManagement from "./build/AirlineManagement.json";
 
 const instance = new web3.eth.Contract(
   AirlineManagement.abi,
-  "0x225Acf66893d5cc94B54aC6ae761B8E37aE86810"
+  "0x65BF8F6DDcBA42273b65e576f6B024C7E3eC6c59"
 );
 
 export default instance;
