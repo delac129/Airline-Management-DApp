@@ -8,6 +8,9 @@ This decentralized application (DApp) acts as an Airline Management System deplo
 - View available flights with details such as seating availability and pricing (in Wei).
 - Book flights based on customer preferences (month, class, and round-trip).
 - Automatically generates a boarding pass containing flight details upon booking.
+- ## Main Page Preview
+
+![Main Page](assets/Screenshot%202024-11-25%20at%208.52.35%E2%80%AFPM.png)
 
 ### Manager's Page (CEO-Only Access)
 - Add new flight destinations with base prices, creating 30 tickets per destination.
