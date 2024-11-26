@@ -3,6 +3,18 @@
 ## Overview
 This decentralized application (DApp) acts as an Airline Management System deployed on the Sepolia test network. The system supports two kinds of users: **CEO** and **Customers**. Customers can view and book flights, while the CEO can create destinations and collect revenue. The application includes a front-end interface integrated with MetaMask for secure interactions.
 
+## Authors
+
+This project was developed as part of the CS 537 Blockchain Programming course. 
+
+- **Andres Hinojosa**  
+  [GitHub Profile](https://github.com/Antech15)  
+  [LinkedIn Profile](https://www.linkedin.com/in/ahinoj/)  
+
+- **Alfonso De La Cruz**  
+  [GitHub Profile](https://github.com/delac129)  
+  [LinkedIn Profile](https://www.linkedin.com/in/alfonsojd/)  
+
 ## Features
 ### Main Page
 - View available flights with details such as seating availability and pricing (in Wei).
